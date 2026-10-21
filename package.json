@@ -1,0 +1,24 @@
+{
+  "name": "nuke-target-finder-bot",
+  "version": "1.0.0",
+  "description": "Standalone Discord bot for Politics & War high-infra nuclear target discovery and coalition management",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "better-sqlite3": "^13.0.3",
+    "discord.js": "^14.16.3",
+    "dotenv": "^18.0.8"
+  },
+  "keywords": [
+    "politicsandwar",
+    "discord-bot",
+    "nuke-target-finder"
+  ],
+  "private": true,
+  "author": "Built exclusively for sneb_8777",
+  "license": "UNLICENSED"
+}
