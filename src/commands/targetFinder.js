@@ -154,6 +154,16 @@ module.exports = {
                         .setName('guiding_satellite')
                         .setDescription('Attacker has Guiding Satellite (+20% damage, default: false)')
                 )
+                .addBooleanOption(opt =>
+                    opt
+                        .setName('has_vds')
+                        .setDescription('Include nations with Vital Defense System (default: true)')
+                )
+                .addBooleanOption(opt =>
+                    opt
+                        .setName('has_ironedome')
+                        .setDescription('Include nations with Iron Dome (default: true)')
+                )
         ),
 
     async execute(interaction) {
@@ -167,6 +177,8 @@ module.exports = {
             const includeBeige = interaction.options.getBoolean('include_beige') || false;
             const includeApplicants = interaction.options.getBoolean('include_applicants') || false;
             const guidingSatellite = interaction.options.getBoolean('guiding_satellite') || false;
+            const hasVds = interaction.options.getBoolean('has_vds') !== false;
+            const hasIronedome = interaction.options.getBoolean('has_ironedome') !== false;
 
             let minScore = interaction.options.getInteger('min_score');
             let maxScore = interaction.options.getInteger('max_score');
@@ -227,6 +239,8 @@ module.exports = {
                 include_vacation: false,
                 include_applicants: includeApplicants,
                 alliance_ids: targetAlliances,
+                has_vds: hasVds,
+                has_ironedome: hasIronedome,
             });
 
             const scoredTargets = [];
@@ -324,11 +338,15 @@ async function sendPaginatedNukeTargets(interaction, targets, meta) {
             const header = `#${rank} • ${n.nation_name || `Nation #${n.id}`} — ${allianceName}`;
             const nationLink = `[Open Nation #${n.id}](https://politicsandwar.com/nation/id=${n.id})`;
 
+            const targetHasVds = nationsCache.checkNationHasVds(n);
+            const targetHasIronDome = nationsCache.checkNationHasIronDome(n);
+
             const statsBlock =
                 `\`\`\`\n` +
                 `🎯 Score: ${addCommas(n.score)}  |  🏙️ ${n.num_cities || (n.cities ? n.cities.length : 0)} cities  |  🛡️ ${n.defensive_wars_count || 0}/3 def wars\n\n` +
                 `💥 Top ${n.topNCitiesCount} Rebuild Loss: ${formatCash(n.totalDamageValue)} (-${addCommas(n.totalNukeDamage)} infra)\n\n` +
-                `⚔️ Air: ${addCommas(n.aircraft || 0)}  |  Ships: ${addCommas(n.ships || 0)}  |  Nukes: ${n.nukes || 0}  |  Spies: ${n.spies || 0}\n` +
+                `✈️ Air: ${addCommas(n.aircraft || 0)}  |  🚢 Ships: ${addCommas(n.ships || 0)}  |  ☢️ Nukes: ${addCommas(n.nukes || 0)}  |  🕵️ Spies: ${addCommas(n.spies || 0)}\n\n` +
+                `🛡️ VDS: ${targetHasVds ? 'Yes' : 'No'}  |  🌐 Iron Dome: ${targetHasIronDome ? 'Yes' : 'No'}\n` +
                 `\`\`\``;
 
             embed.addFields({

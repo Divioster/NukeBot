@@ -300,8 +300,60 @@ function getNations(filters = {}) {
             if (aId !== q && !aName.includes(q)) return false;
         }
 
+        // Vital Defense System filter (default: true -> all nations; if false -> exclude nations with VDS)
+        if (filters.has_vds === false) {
+            if (checkNationHasVds(nation)) return false;
+        }
+
+        // Iron Dome filter (default: true -> all nations; if false -> exclude nations with Iron Dome)
+        if (filters.has_ironedome === false) {
+            if (checkNationHasIronDome(nation)) return false;
+        }
+
         return true;
     });
+}
+
+/**
+ * Checks whether a nation possesses the Vital Defense System project.
+ */
+function checkNationHasVds(nation) {
+    if (!nation) return false;
+    if (nation.vital_defense_system !== undefined && nation.vital_defense_system !== null) {
+        return Boolean(nation.vital_defense_system);
+    }
+    if (nation.project_bits !== undefined && nation.project_bits !== null && String(nation.project_bits) !== '0') {
+        try {
+            const str = String(nation.project_bits).trim();
+            const b = (str.includes('e') || str.includes('E')) ? BigInt(Math.round(Number(str))) : BigInt(str);
+            return ((b >> 9n) & 1n) === 1n; // Vital Defense System is index 9 (bit 9)
+        } catch (_) {}
+    }
+    if (Array.isArray(nation.projects)) {
+        return nation.projects.includes('Vital Defense System') || nation.projects.includes('vital_defense_system') || nation.projects.includes('VDS');
+    }
+    return false;
+}
+
+/**
+ * Checks whether a nation possesses the Iron Dome project.
+ */
+function checkNationHasIronDome(nation) {
+    if (!nation) return false;
+    if (nation.iron_dome !== undefined && nation.iron_dome !== null) {
+        return Boolean(nation.iron_dome);
+    }
+    if (nation.project_bits !== undefined && nation.project_bits !== null && String(nation.project_bits) !== '0') {
+        try {
+            const str = String(nation.project_bits).trim();
+            const b = (str.includes('e') || str.includes('E')) ? BigInt(Math.round(Number(str))) : BigInt(str);
+            return ((b >> 8n) & 1n) === 1n; // Iron Dome is index 8 (bit 8)
+        } catch (_) {}
+    }
+    if (Array.isArray(nation.projects)) {
+        return nation.projects.includes('Iron Dome') || nation.projects.includes('iron_dome');
+    }
+    return false;
 }
 
 /**
@@ -342,4 +394,6 @@ module.exports = {
     getNationCount,
     getLastUpdated,
     getRawCaches,
+    checkNationHasVds,
+    checkNationHasIronDome,
 };

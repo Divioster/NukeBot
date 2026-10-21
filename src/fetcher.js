@@ -46,6 +46,9 @@ query ($page: Int!) {
       missiles
       nukes
       spies
+      iron_dome
+      vital_defense_system
+      project_bits
       alliance {
         id
         name
@@ -209,6 +212,9 @@ async function syncNations(options = {}) {
                     nukes: Number(nation.nukes || 0),
                     spies: Number(nation.spies || 0),
                     missiles: Number(nation.missiles || 0),
+                    iron_dome: Boolean(nation.iron_dome),
+                    vital_defense_system: Boolean(nation.vital_defense_system),
+                    project_bits: nation.project_bits || 0,
                     cities,
                     last_updated: Date.now(),
                 };
