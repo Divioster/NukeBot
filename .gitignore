@@ -4,3 +4,4 @@ data/*
 !data/.gitkeep
 .DS_Store
 *.log
+data/nations_current.json.bak
