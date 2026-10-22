@@ -212,6 +212,8 @@ Discovers and ranks prime nuclear strike targets.
 | `include_beige` | Boolean | `false` | Include nations with active beige turns. |
 | `include_applicants` | Boolean | `false` | Include alliance applicants. |
 | `guiding_satellite` | Boolean | `false` | Adds Guiding Satellite project multiplier (+20% infra damage). |
+| `has_vds` | Boolean | `true` | Include nations with Vital Defense System project. |
+| `has_iron_dome` | Boolean | `true` | Include nations with Iron Dome project. |
 
 ---
 
@@ -232,4 +234,6 @@ Discovers and ranks prime nuclear strike targets.
 
 ## 📄 License & Ownership
 
-**Proprietary Software** — Custom built exclusively for **sneb_8777**. All rights reserved. Unauthorized copying, distribution, re-licensing, or public publication is strictly prohibited.
+- **Author**: Div45
+- **Client**: Custom built exclusively for **sneb_8777**
+- **License**: Proprietary Software. All rights reserved. Unauthorized copying, distribution, re-licensing, or public publication is strictly prohibited.

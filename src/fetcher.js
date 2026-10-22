@@ -59,6 +59,7 @@ query ($page: Int!) {
       }
       cities {
         id
+        name
         infrastructure
         land
       }
@@ -190,6 +191,7 @@ async function syncNations(options = {}) {
                 const cities = Array.isArray(nation.cities)
                     ? nation.cities.map(c => ({
                         id: c.id,
+                        name: c.name || `City #${c.id}`,
                         infra: Number(c.infrastructure || 0),
                         land: Number(c.land || c.infrastructure || 0),
                     }))

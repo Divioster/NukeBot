@@ -1,7 +1,17 @@
 node_modules/
 .env
-data/*
-!data/.gitkeep
 .DS_Store
 *.log
-data/nations_current.json.bak
+
+# SQLite databases, journals, and snapshots
+*.db
+*.db-shm
+*.db-wal
+*.bak
+
+# Cache data & temp files
+data/*
+!data/.gitkeep
+*.corrupted.*
+*.tmp.*
+

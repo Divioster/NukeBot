@@ -11,6 +11,7 @@ const {
     GatewayIntentBits,
     REST,
     Routes,
+    Events,
 } = require('discord.js');
 const config = require('./src/config');
 const database = require('./src/database');
@@ -101,7 +102,7 @@ client.on('warn', (warning) => {
 });
 
 // Event: Client Ready
-client.once('ready', async () => {
+client.once(Events.ClientReady, async () => {
     console.log(`====================================================`);
     console.log(`☢️  Nuke Target Finder Bot is online as: ${client.user.tag}`);
     console.log(`🛡️  Connected to ${client.guilds.cache.size} server(s)`);

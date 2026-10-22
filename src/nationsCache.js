@@ -306,7 +306,7 @@ function getNations(filters = {}) {
         }
 
         // Iron Dome filter (default: true -> all nations; if false -> exclude nations with Iron Dome)
-        if (filters.has_ironedome === false) {
+        if (filters.has_iron_dome === false || filters.has_ironedome === false) {
             if (checkNationHasIronDome(nation)) return false;
         }
 

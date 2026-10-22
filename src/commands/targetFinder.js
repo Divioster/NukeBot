@@ -161,7 +161,7 @@ module.exports = {
                 )
                 .addBooleanOption(opt =>
                     opt
-                        .setName('has_ironedome')
+                        .setName('has_iron_dome')
                         .setDescription('Include nations with Iron Dome (default: true)')
                 )
         ),
@@ -178,7 +178,7 @@ module.exports = {
             const includeApplicants = interaction.options.getBoolean('include_applicants') || false;
             const guidingSatellite = interaction.options.getBoolean('guiding_satellite') || false;
             const hasVds = interaction.options.getBoolean('has_vds') !== false;
-            const hasIronedome = interaction.options.getBoolean('has_ironedome') !== false;
+            const hasIronDome = (interaction.options.getBoolean('has_iron_dome') ?? interaction.options.getBoolean('has_ironedome')) !== false;
 
             let minScore = interaction.options.getInteger('min_score');
             let maxScore = interaction.options.getInteger('max_score');
@@ -204,6 +204,7 @@ module.exports = {
 
             // Resolve target alliance IDs from local SQLite coalition or direct ID input
             let targetAlliances = null;
+            let targetAllianceQuery = null;
             if (coalitionOrAlliance) {
                 const queryStr = coalitionOrAlliance.trim().toLowerCase();
 
@@ -226,6 +227,9 @@ module.exports = {
                             .split(',')
                             .map(id => id.trim())
                             .filter(Boolean);
+                    } else {
+                        // 3. User entered an alliance name query (e.g. "Eclipse", "Rose")
+                        targetAllianceQuery = queryStr;
                     }
                 }
             }
@@ -239,8 +243,9 @@ module.exports = {
                 include_vacation: false,
                 include_applicants: includeApplicants,
                 alliance_ids: targetAlliances,
+                alliance_query: targetAllianceQuery,
                 has_vds: hasVds,
-                has_ironedome: hasIronedome,
+                has_iron_dome: hasIronDome,
             });
 
             const scoredTargets = [];
@@ -259,7 +264,7 @@ module.exports = {
                     .addFields(
                         { name: 'Cities Evaluated', value: `${topN}`, inline: true },
                         { name: 'Score Range', value: `${minScore && maxScore ? `${addCommas(minScore)} - ${addCommas(maxScore)}` : 'All Scores'}`, inline: true },
-                        { name: 'Alliances / Coalition', value: `${targetAlliances ? targetAlliances.join(', ') : 'All Alliances'}`, inline: true }
+                        { name: 'Alliances / Coalition', value: `${targetAlliances ? targetAlliances.join(', ') : (targetAllianceQuery || 'All Alliances')}`, inline: true }
                     );
 
                 return interaction.editReply({ embeds: [notFoundEmbed] });
@@ -332,10 +337,16 @@ async function sendPaginatedNukeTargets(interaction, targets, meta) {
             let citiesDetail = '';
             for (const c of n.evaluatedTopCities) {
                 const cityLabel = c.name && !c.name.startsWith('City #') ? c.name : `City #${c.id}`;
-                citiesDetail += `• [${cityLabel}](https://politicsandwar.com/city/id=${c.id}) (${addCommas(c.infra)} infra) ➔ **−${addCommas(c.nukeDamage)}** (${formatCash(c.nukeDamageValue)})\n`;
+                const line = `• [${cityLabel}](https://politicsandwar.com/city/id=${c.id}) (${addCommas(c.infra)} infra) ➔ **−${addCommas(c.nukeDamage)}** (${formatCash(c.nukeDamageValue)})\n`;
+                if ((citiesDetail + line).length > 550) {
+                    const remaining = n.evaluatedTopCities.length - n.evaluatedTopCities.indexOf(c);
+                    citiesDetail += `• *...and ${remaining} more evaluated cities*\n`;
+                    break;
+                }
+                citiesDetail += line;
             }
 
-            const header = `#${rank} • ${n.nation_name || `Nation #${n.id}`} — ${allianceName}`;
+            const header = `#${rank} • ${n.nation_name || `Nation #${n.id}`} — ${allianceName}`.slice(0, 250);
             const nationLink = `[Open Nation #${n.id}](https://politicsandwar.com/nation/id=${n.id})`;
 
             const targetHasVds = nationsCache.checkNationHasVds(n);
@@ -349,9 +360,14 @@ async function sendPaginatedNukeTargets(interaction, targets, meta) {
                 `🛡️ VDS: ${targetHasVds ? 'Yes' : 'No'}  |  🌐 Iron Dome: ${targetHasIronDome ? 'Yes' : 'No'}\n` +
                 `\`\`\``;
 
+            let fieldValue = `${nationLink}\n${statsBlock}\n${citiesDetail.trimEnd()}`;
+            if (fieldValue.length > 1024) {
+                fieldValue = fieldValue.slice(0, 1020) + '...';
+            }
+
             embed.addFields({
                 name: header,
-                value: `${nationLink}\n${statsBlock}\n${citiesDetail.trimEnd()}`,
+                value: fieldValue,
                 inline: false,
             });
         }
@@ -402,10 +418,12 @@ async function sendPaginatedNukeTargets(interaction, targets, meta) {
         lastBtn.setDisabled(pageIndex === pages.length - 1);
         nextBtn.setDisabled(pageIndex === pages.length - 1);
 
-        await i.update({
-            embeds: [buildEmbedForPage(pageIndex)],
-            components: [new ActionRowBuilder().addComponents(firstBtn, prevBtn, nextBtn, lastBtn)],
-        });
+        try {
+            await i.update({
+                embeds: [buildEmbedForPage(pageIndex)],
+                components: [new ActionRowBuilder().addComponents(firstBtn, prevBtn, nextBtn, lastBtn)],
+            });
+        } catch (_) {}
     });
 
     collector.on('end', async () => {
